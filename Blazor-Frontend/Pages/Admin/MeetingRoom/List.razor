@@ -1,0 +1,49 @@
+﻿@page "/admin/meetingroom/list"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Meeting Room List</h3>
+
+@if (rooms == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Capacity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in rooms)
+            {
+                <tr>
+                    <td>@room.Id</td>
+                    <td>@room.Name</td>
+                    <td>@room.Capacity</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" @onclick="() => ViewDetails(room.Id)">Details</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteRoom(room.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<MeetingRoomDto> rooms;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await ApiService.GetMeetingRooms();
+    }
+
+    void ViewDetails(Guid id) => Navigation.NavigateTo($"/admin/meetingroom/details/{id}");
+    void DeleteRoom(Guid id) => Navigation.NavigateTo($"/admin/deletemeetingroom/confirm/{id}");
+}

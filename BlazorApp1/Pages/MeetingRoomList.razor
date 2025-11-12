@@ -1,0 +1,137 @@
+﻿@page "/meetingroomlist"
+@layout MainLayout
+@using BlazorApp1.Client.Services
+@using BlazorApp1.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject MeetingRoomService RoomService
+
+<!-- Back Button (Top Left) -->
+<div class="d-flex align-items-center mb-3">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+    <h3 class="mb-0">🏢 Meeting Room List</h3>
+</div>
+
+<p class="text-muted">Live search by Name or Serial.</p>
+
+<!-- Dynamic Search Input -->
+<div class="mb-3">
+    <input type="text"
+           class="form-control"
+           placeholder="Type name or serial..."
+           @bind="searchText"
+           @oninput="OnSearchChanged" />
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (filteredRooms.Count == 0)
+{
+    <div class="alert alert-info">No matching rooms found.</div>
+}
+else
+{
+    <table class="table table-striped table-hover mt-2 shadow-sm">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Serial</th>
+                <th>Name</th>
+                <th>Capacity</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in filteredRooms)
+            {
+                <tr>
+                    <td>@room.Serial</td>
+                    <td>@room.Name</td>
+                    <td>@room.Capacity</td>
+                    <td>@room.Location</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<style>
+    .back-btn-vibrant {
+        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
+        color: #182848;
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+    }
+
+        .back-btn-vibrant:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
+            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+        }
+</style>
+
+@code {
+    private List<MeetingRoom> rooms = new();
+    private List<MeetingRoom> filteredRooms = new();
+    private string searchText = "";
+    private string errorMessage;
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get user role
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.IsInRole("Admin"))
+                userRole = "Admin";
+            else if (user.IsInRole("Employee"))
+                userRole = "Employee";
+
+            // Load meeting rooms
+            rooms = await RoomService.GetAllRoomsAsync();
+            filteredRooms = new List<MeetingRoom>(rooms);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error: " + ex.Message;
+        }
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString()?.Trim().ToLower() ?? "";
+
+        if (string.IsNullOrEmpty(searchText))
+        {
+            filteredRooms = new List<MeetingRoom>(rooms);
+            return;
+        }
+
+        filteredRooms = rooms
+            .Where(r =>
+                r.Name.ToLower().Contains(searchText) ||
+                r.Serial.ToString().Contains(searchText)
+            )
+            .ToList();
+    }
+
+    private void HandleGoBack()
+    {
+        if (userRole == "Admin")
+            Navigation.NavigateTo("/adminpanel");
+        else if (userRole == "Employee")
+            Navigation.NavigateTo("/employeepanel");
+        else
+            Navigation.NavigateTo("/login");
+    }
+}

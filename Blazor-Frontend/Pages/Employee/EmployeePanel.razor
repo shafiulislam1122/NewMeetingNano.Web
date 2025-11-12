@@ -1,0 +1,37 @@
+﻿@page "/employee"
+@using Microsoft.AspNetCore.Components.Routing
+@using MeetingRoomNano.Client.Shared
+@inject NavigationManager Navigation
+
+
+<LayoutView Layout="@typeof(MainLayout)">
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar bg-light p-3" style="width:240px; height:100vh;">
+            <a class="nav-link" @onclick="@(() => NavigateTo("meetingroomlist"))">Meeting Rooms</a>
+            <a class="nav-link" @onclick="@(() => NavigateTo("createmeeting"))">Create Meeting</a>
+            <a class="nav-link" @onclick="@(() => NavigateTo("updateprofile"))">Update Profile</a>
+            <a class="nav-link" @onclick="@(() => NavigateTo("deleteprofile"))">Delete Profile</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-fill p-3">
+            <h3>Employee Dashboard</h3>
+            <Router AppAssembly="@typeof(EmployeePanel).Assembly">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                </Found>
+                <NotFound>
+                    <p>Page not found.</p>
+                </NotFound>
+            </Router>
+        </div>
+    </div>
+</LayoutView>
+
+@code {
+    void NavigateTo(string route)
+    {
+        Navigation.NavigateTo($"/employee/{route}");
+    }
+}

@@ -1,0 +1,60 @@
+﻿@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <TopBar />
+    
+    <div class="body-container">
+        <!-- NavMenu should be defined here, containing the actual sidebar element -->
+        <NavMenu /> 
+        
+        <main class="content-area">
+            @Body
+        </main>
+    </div>
+</div>
+
+<style>
+    /* ----------------------------------- */
+    /* MAIN LAYOUT STRUCTURE */
+    /* ----------------------------------- */
+    .main-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-color: #f8f9fa;
+    }
+
+    .body-container {
+        display: flex;
+        flex: 1; /* Ensures it takes up all remaining vertical space */
+        width: 100%;
+    }
+
+    /* ----------------------------------- */
+    /* CONTENT AREA */
+    /* ----------------------------------- */
+    .content-area {
+        flex: 1; /* Takes up all horizontal space not taken by NavMenu */
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    /* ----------------------------------- */
+    /* NAVIGATION MENU (Assuming NavMenu uses a 'sidebar' class inside) */
+    /* Adjust these styles to match your NavMenu.razor file */
+    /* ----------------------------------- */
+    .sidebar {
+        width: 250px; /* Fixed width for the sidebar */
+        min-width: 250px; 
+        background-color: #343a40; /* Dark gray for a professional look */
+        color: white;
+        padding-top: 20px;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 100;
+    }
+    
+    /* If NavMenu is rendering directly as the component without an internal 'sidebar' div, 
+       the 'NavMenu' component needs to have this width applied. 
+       You will need to ensure NavMenu itself has the fixed width and background. 
+    */
+</style>

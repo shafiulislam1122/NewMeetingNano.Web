@@ -1,0 +1,34 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+@inject JwtAuthStateProvider AuthProvider
+
+<h3>Welcome to MeetingRoomNano</h3>
+
+@if (string.IsNullOrEmpty(userRole))
+{
+    <p>
+        <button class="btn btn-primary me-2" @onclick="@(() => Navigation.NavigateTo("/login"))">Login</button>
+        <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/register"))">Register</button>
+    </p>
+}
+else if (userRole == "Admin")
+{
+    <p>
+        <button class="btn btn-success" @onclick="@(() => Navigation.NavigateTo("/admin/adminpanel"))">Admin Panel</button>
+    </p>
+}
+else if (userRole == "Employee")
+{
+    <p>
+        <button class="btn btn-success" @onclick="@(() => Navigation.NavigateTo("/employee/employeepanel"))">Employee Panel</button>
+    </p>
+}
+
+@code {
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        userRole = await AuthProvider.GetUserRoleAsync();
+    }
+}

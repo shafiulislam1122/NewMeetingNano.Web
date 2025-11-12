@@ -1,0 +1,34 @@
+﻿@page "/admin"
+@using Microsoft.AspNetCore.Components.Routing
+@using MeetingRoomNano.Client.Shared
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject ApiService ApiService
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar bg-light p-3" style="width:240px; height:100vh;">
+        <a class="nav-link" @onclick='() => NavigateTo("meetingroom/list")'>Meeting Rooms</a>
+        <a class="nav-link" @onclick='() => NavigateTo("meetingroom/create")'>Create Room</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-fill p-3">
+        <h3>Admin Dashboard</h3>
+        <Router AppAssembly="@typeof(AdminPanel).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="@typeof(MainLayout)" />
+            </Found>
+            <NotFound>
+                <p>Page not found.</p>
+            </NotFound>
+        </Router>
+    </div>
+</div>
+
+@code {
+    void NavigateTo(string route)
+    {
+        Navigation.NavigateTo($"/admin/{route}");
+    }
+}

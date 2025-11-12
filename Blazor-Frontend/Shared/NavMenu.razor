@@ -1,0 +1,32 @@
+﻿@inject NavigationManager Navigation
+@inject JwtAuthStateProvider AuthStateProvider
+
+<div class="sidebar bg-light p-3" style="width:240px; height:100vh;">
+    @if (!string.IsNullOrEmpty(userRole))
+    {
+        @if (userRole == "Admin")
+        {
+            <a class="nav-link" @onclick="@(() => Navigate("admin/adminpanel"))">Admin Panel</a>
+            <a class="nav-link" @onclick="@(() => Navigate("admin/meetingroom/list"))">Meeting Rooms</a>
+        }
+        else if (userRole == "Employee")
+        {
+            <a class="nav-link" @onclick="@(() => Navigate("employee/employeepanel"))">Employee Panel</a>
+            <a class="nav-link" @onclick="@(() => Navigate("employee/meetingroomlist"))">Meeting Rooms</a>
+        }
+    }
+</div>
+
+@code {
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        userRole = await AuthStateProvider.GetUserRoleAsync();
+    }
+
+    private void Navigate(string url)
+    {
+        Navigation.NavigateTo("/" + url);
+    }
+}

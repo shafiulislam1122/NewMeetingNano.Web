@@ -1,0 +1,25 @@
+﻿@page "/admin/meetingroom/create"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Create Meeting Room</h3>
+
+<div class="card p-3">
+    <input class="form-control mb-2" placeholder="Room Name" @bind="newRoom.Name" />
+    <input class="form-control mb-2" type="number" placeholder="Capacity" @bind="newRoom.Capacity" />
+
+    <button class="btn btn-success" @onclick="CreateRoom">Create</button>
+</div>
+
+@code {
+    private MeetingRoomCreateDto newRoom = new MeetingRoomCreateDto();
+
+    async Task CreateRoom()
+    {
+        var result = await ApiService.CreateMeetingRoom(newRoom);
+        if (result)
+        {
+            Navigation.NavigateTo("/admin/meetingroom/create/success");
+        }
+    }
+}

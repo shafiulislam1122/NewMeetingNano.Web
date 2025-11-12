@@ -1,0 +1,31 @@
+﻿@page "/employee/updateprofile"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Update Profile</h3>
+
+<div class="card p-3">
+    <input class="form-control mb-2" placeholder="Full Name" @bind="profile.FullName" />
+    <input class="form-control mb-2" placeholder="Email" @bind="profile.Email" />
+    <input class="form-control mb-2" type="password" placeholder="Password" @bind="profile.Password" />
+
+    <button class="btn btn-success mt-2" @onclick="UpdateProfileAsync">Update</button>
+</div>
+
+@code {
+    private ProfileUpdateDto profile = new ProfileUpdateDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        profile = await ApiService.GetProfile();
+    }
+
+    private async Task UpdateProfileAsync()
+    {
+        var success = await ApiService.UpdateProfile(profile);
+        if (success)
+        {
+            Navigation.NavigateTo("/employee/updateprofile/success");
+        }
+    }
+}

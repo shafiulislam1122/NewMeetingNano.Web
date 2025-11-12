@@ -1,0 +1,110 @@
+﻿@page "/adminpanel"
+@inject NavigationManager Navigation
+
+<h3 class="mb-4">Admin Panel</h3>
+
+<div class="welcome-message mb-5 text-center">
+    <h1>Welcome to Admin Panel</h1>
+    <p class="lead text-muted">Manage all meeting room operations from here.</p>
+</div>
+
+<div class="row">
+
+    <!-- ✅ 1. Meeting Room List -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-card-1 custom-panel-card"
+             @onclick="() => GoTo(MeetingRoomList)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Meeting Room List</h5>
+                <p class="card-text">View all existing meeting rooms.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ 2. Create Meeting Room -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-card-2-final custom-panel-card"
+             @onclick="() => GoTo(CreateRoom)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Create Meeting Room</h5>
+                <p class="card-text">Add a new room to the system.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ 3. Room Details by Serial -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-card-3 custom-panel-card"
+             @onclick="() => GoTo(RoomDetailsBySerial)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Meeting Room Details</h5>
+                <p class="card-text">Search specific room settings by serial.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ 4. Delete Meeting Room (FIXED ✅) -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-card-4-final custom-panel-card"
+             @onclick="() => GoTo(DeleteRoom)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Delete Meeting Room</h5>
+                <p class="card-text">Remove an unused meeting room.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .welcome-message h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 0;
+    }
+
+    .gradient-card-1 {
+        background-image: linear-gradient(135deg, #4b6cb7 0%, #182848 100%) !important;
+    }
+
+    .gradient-card-2-final {
+        background-image: linear-gradient(135deg, #FFC72C 0%, #E66400 100%) !important;
+    }
+
+    .gradient-card-3 {
+        background-image: linear-gradient(135deg, #aa076b 0%, #61045f 100%) !important;
+    }
+
+    .gradient-card-4-final {
+        background-image: linear-gradient(135deg, #5D26C1 0%, #a1789c 100%) !important;
+    }
+
+    .custom-panel-card {
+        cursor: pointer !important;
+        transition: transform 0.3s, box-shadow 0.3s;
+        min-height: 150px !important;
+        border: none !important;
+        color: #ffffff !important;
+    }
+
+        .custom-panel-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
+            opacity: 1;
+        }
+</style>
+
+@code {
+    private string MeetingRoomList = "/meetingroomlist";
+    private string CreateRoom = "/createroom";
+    private string RoomDetailsBySerial = "/roomdetailsbyserial";
+
+    // ✅ FIXED: Delete Room route
+    private string DeleteRoom = "/deleteroom";
+
+    void GoTo(string url)
+    {
+        Navigation.NavigateTo(url);
+    }
+}

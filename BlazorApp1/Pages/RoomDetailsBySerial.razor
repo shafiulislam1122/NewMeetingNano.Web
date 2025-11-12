@@ -1,0 +1,201 @@
+﻿@page "/roomdetailsbyserial"
+@using BlazorApp1.Client.Services
+@using BlazorApp1.Services
+@inject MeetingRoomService RoomService
+@inject NavigationManager Navigation
+
+<!-- Back Button + Page Title -->
+<div class="d-flex align-items-center mb-4">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+    <h3 class="text-primary mb-0 font-weight-bold"><span class="oi oi-list"></span> Meeting Room List</h3>
+</div>
+
+<p>View all existing meeting rooms. Use the search box above to find specific details, including the creation time.</p>
+
+<!-- ⭐ Search Section (Placed above the list) ⭐ -->
+<div class="card shadow p-4 mb-4 bg-light">
+    <h5 class="card-title text-primary">Search Room by Serial Number</h5>
+
+    <div class="form-group row align-items-center">
+        <label for="serialInput" class="col-sm-3 col-form-label font-weight-bold">Enter Serial Number:</label>
+        <div class="col-sm-5">
+            <input type="number" class="form-control" id="serialInput" @bind="searchSerial" placeholder="e.g.: 1003">
+        </div>
+        <div class="col-sm-4">
+            <button class="btn btn-success" @onclick="HandleSearch" disabled="@(searchSerial <= 0 || isLoading)">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
+                View Details
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ⭐ Display Single Search Result (Includes Created Time) ⭐ -->
+@if (searchedRoom != null)
+{
+    <div class="card shadow p-4 mb-5 border-info">
+        <h4 class="card-title text-info">Searched Room Details: @searchedRoom.Name</h4>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Serial:</strong> @searchedRoom.Serial</li>
+            <li class="list-group-item"><strong>Name:</strong> @searchedRoom.Name</li>
+            <li class="list-group-item"><strong>Capacity:</strong> @searchedRoom.Capacity people</li>
+            <li class="list-group-item"><strong>Location:</strong> @searchedRoom.Location</li>
+            <li class="list-group-item bg-light"><strong>Created Time:</strong> @searchedRoom.CreatedAt.ToString("dd MMMM yyyy HH:mm:ss")</li>
+        </ul>
+    </div>
+}
+else if (searchAttempted && !isLoading)
+{
+    <div class="alert alert-warning mt-3">
+        No room found for serial number **@lastSearchedSerial**.
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-4">
+        <h4>Error!</h4>
+        <p>@errorMessage</p>
+    </div>
+}
+
+<!-- Main List Section (Existing Code) -->
+<h4 class="mt-5 mb-3">All Meeting Rooms</h4>
+@if (rooms == null && errorMessage == null)
+{
+    <p><em>Loading room list...</em></p>
+}
+else if (rooms != null && rooms.Count == 0 && errorMessage == null)
+{
+    <p>No meeting rooms found.</p>
+}
+else
+{
+    <table class="table table-striped table-hover mt-3">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Serial</th>
+                <th>Name</th>
+                <th>Capacity</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in rooms)
+            {
+                <tr>
+                    <td>@room.Serial</td>
+                    <td>@room.Name</td>
+                    <td>@room.Capacity</td>
+                    <td>@room.Location</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" @onclick="() => NavigateToDetails(room.Serial)">Details</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<style>
+    .back-btn-vibrant {
+        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
+        color: #182848;
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+    }
+
+        .back-btn-vibrant:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
+            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+        }
+</style>
+
+@code {
+    private List<MeetingRoom> rooms;
+    private int searchSerial { get; set; }
+    private MeetingRoom searchedRoom;
+    private bool isLoading = false;
+    private bool searchAttempted = false;
+    private int lastSearchedSerial = 0;
+    private string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoomsAsync();
+    }
+
+    private async Task LoadRoomsAsync()
+    {
+        try
+        {
+            rooms = await RoomService.GetAllRoomsAsync();
+            errorMessage = null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            errorMessage = "Access unauthorized. Please log in.";
+            rooms = new List<MeetingRoom>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading rooms: {ex.Message}";
+            rooms = new List<MeetingRoom>();
+        }
+    }
+
+    private async Task HandleSearch()
+    {
+        if (searchSerial <= 0)
+        {
+            errorMessage = "Please enter a valid serial number.";
+            searchedRoom = null;
+            searchAttempted = false;
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        searchedRoom = null;
+        searchAttempted = false;
+        lastSearchedSerial = searchSerial;
+
+        try
+        {
+            searchedRoom = await RoomService.GetRoomDetailsAsync(searchSerial);
+            searchAttempted = true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            errorMessage = "Access unauthorized. Please log in.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error fetching details: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateToDetails(int serial)
+    {
+        Navigation.NavigateTo($"/roomdetails/{serial}");
+    }
+
+    private void HandleGoBack()
+    {
+        Navigation.NavigateTo("/adminpanel");
+    }
+}

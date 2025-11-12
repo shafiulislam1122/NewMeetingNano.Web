@@ -1,0 +1,6 @@
+﻿namespace Blazor-Frontend.wwwroot.css
+{
+    public class favicon
+    {
+    }
+}

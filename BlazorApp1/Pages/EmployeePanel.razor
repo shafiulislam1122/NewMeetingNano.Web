@@ -1,0 +1,107 @@
+﻿@page "/employeepanel"
+@inject NavigationManager Navigation
+
+<div class="welcome-message mb-5 text-center">
+    <h1>Welcome to Employee Panel</h1>
+    <p class="lead text-muted">Access and manage your personal and meeting information.</p>
+</div>
+
+<div class="row">
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-emp-1-final custom-panel-card" @onclick="() => GoTo(CreateMeeting)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Create Meeting</h5>
+                <p class="card-text">Book a new meeting room.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-emp-2-final custom-panel-card" @onclick="() => GoTo(UpdateProfile)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Update Profile</h5>
+                <p class="card-text">Change your personal details.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-emp-3-final custom-panel-card" @onclick="() => GoTo(DeleteProfile)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Delete Profile</h5>
+                <p class="card-text">Request removal of your data.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card text-white h-100 shadow-sm gradient-emp-4-final custom-panel-card" @onclick="() => GoTo(MeetingRoomList)">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                <h5 class="card-title text-uppercase font-weight-bold">Meeting Room List</h5>
+                <p class="card-text">View available rooms and their status.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    /* Welcome message styling */
+    .welcome-message h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 0;
+    }
+
+    /* Gradient background colors */
+    .gradient-emp-1-final {
+        background-image: linear-gradient(135deg, #0f1c3f 0%, #15a9ff 100%) !important;
+    }
+
+    .gradient-emp-2-final {
+        background-image: linear-gradient(135deg, #7c4d1b 0%, #e8b06e 100%) !important;
+    }
+
+    .gradient-emp-3-final {
+        background-image: linear-gradient(135deg, #333333 0%, #ff0000 100%) !important;
+    }
+
+    .gradient-emp-4-final {
+        background-image: linear-gradient(135deg, #004d40 0%, #8bc34a 100%) !important;
+    }
+
+    /* Common card styling */
+    .custom-panel-card {
+        cursor: pointer !important;
+        transition: transform 0.3s, box-shadow 0.3s;
+        min-height: 150px !important;
+        border: none !important;
+        color: #ffffff !important; /* ensure text is visible on dark gradients */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+
+        .custom-panel-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6) !important;
+            opacity: 1;
+        }
+
+    /* Card text styling */
+    .card-title, .card-text {
+        color: #ffffff !important; /* enforce white text for all cards */
+    }
+</style>
+
+@code {
+    private string CreateMeeting = "/createmeeting";
+    private string UpdateProfile = "/updateprofile";
+    private string DeleteProfile = "/deleteprofile";
+    private string MeetingRoomList = "/meetingroomlist";
+
+    void GoTo(string url)
+    {
+        Navigation.NavigateTo(url);
+    }
+}

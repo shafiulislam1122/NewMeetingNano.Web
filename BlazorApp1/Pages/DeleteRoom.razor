@@ -1,0 +1,175 @@
+﻿@page "/deleteroom"
+@using BlazorApp1.Client.Services
+@using BlazorApp1.Services
+@inject MeetingRoomService RoomService
+@inject NavigationManager Navigation
+
+<div class="d-flex align-items-center mb-5">
+    <!-- Updated Back Button: Removed btn-lg and using new Green gradient -->
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+
+    <h3 class="text-danger mb-0 font-weight-bold">🗑️ মিটিং রুম ডিলিট</h3>
+</div>
+
+<p class="lead text-muted">যে রুমটি স্থায়ীভাবে মুছে ফেলতে চান, তার সিরিয়াল নম্বর দিন এবং ডিলিট বাটনে ক্লিক করুন।</p>
+
+<!-- Card with enhanced shadow and rounded corners -->
+<div class="card shadow-lg p-5 mt-4 border-danger rounded-xl">
+    <h5 class="card-title text-danger mb-4">সিরিয়াল নম্বর প্রবেশ করান</h5>
+
+    <input type="number"
+                    class="form-control form-control-lg mb-4 border-info shadow-sm rounded"
+                    placeholder="সিরিয়াল নম্বর দিন"
+                    @bind="serialToDelete" />
+
+    <!-- Delete Button: Styled with a deep, vibrant red gradient -->
+    <button class="btn btn-lg w-100 delete-btn-gradient shadow-lg rounded-pill"
+                     @onclick="HandleDelete"
+                     disabled="@(isDeleting || serialToDelete <= 0)">
+
+        @if (isDeleting)
+        {
+            <span><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ডিলিট হচ্ছে...</span>
+        }
+        else
+        {
+            <span>স্থায়ীভাবে ডিলিট করুন</span>
+        }
+    </button>
+</div>
+
+<!-- Alert Messages with slightly stronger colors -->
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @statusClass mt-4 shadow-sm">
+        @message
+    </div>
+}
+
+<style>
+    /* Custom style for the vibrant Back button (Light Emerald Green) */
+    .back-btn-vibrant {
+        /* Light Emerald Green gradient: fresh and lively */
+        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%); /* Lighter Green to Deeper Green */
+        color: #182848; /* Dark text for high contrast */
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Initial subtle dark shadow */
+        padding: 0.5rem 1rem; /* Slightly smaller size than btn-lg */
+    }
+
+        .back-btn-vibrant:hover {
+            transform: translateY(-2px);
+            /* Stronger shadow and slightly deeper color on hover */
+            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%); /* Slightly darker on hover */
+            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+        }
+
+    /* Custom style for the vibrant delete button */
+    .delete-btn-gradient {
+        /* Deep Ruby Red Gradient */
+        background: linear-gradient(135deg, #cc0000 0%, #800000 100%);
+        color: white;
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s;
+    }
+
+        .delete-btn-gradient:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(128, 0, 0, 0.4);
+            background: linear-gradient(135deg, #ff3333 0%, #cc0000 100%);
+        }
+
+        .delete-btn-gradient:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+    /* Stronger color for info/success/warning alerts */
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border-color: #ffeeba;
+    }
+</style>
+
+@code {
+    private int serialToDelete = 0;
+    private bool isDeleting = false;
+    private string message = "";
+    private string statusClass = "";
+
+    // Function to handle navigating back to the previous page
+    private void HandleGoBack()
+    {
+        // Redirect to a known page (Admin Panel) as the most logical previous step
+        Navigation.NavigateTo("/adminpanel");
+    }
+
+    private async Task HandleDelete()
+    {
+        // If the serial is not valid, the button should be disabled, but we check again for safety.
+        if (serialToDelete <= 0)
+        {
+            message = "সিরিয়াল নম্বর অবশ্যই ধনাত্মক হতে হবে।";
+            statusClass = "alert-warning";
+            return;
+        }
+
+        isDeleting = true;
+        message = "";
+        statusClass = ""; // Clear previous status class
+
+        try
+        {
+            // Call the Delete API
+            await RoomService.DeleteRoomAsync(serialToDelete);
+
+            // 1. Success Message
+            message = $"✅ সিরিয়াল {serialToDelete} সফলভাবে ডিলিট হয়েছে! ১ সেকেন্ডের মধ্যে মিটিং রুম লিস্টে ফিরে যাচ্ছি...";
+            statusClass = "alert-success";
+
+            // 2. Wait for 1 second
+            await Task.Delay(1000);
+
+            // 3. Navigate to Meeting Room List (as requested)
+            Navigation.NavigateTo("/meetingroomlist", forceLoad: true);
+
+        }
+        catch (Exception ex)
+        {
+            // 4. Handle Errors (Not Found or General)
+            if (ex.Message.Contains("404") || ex.Message.Contains("not found") || ex.Message.Contains("delete"))
+            {
+                message = $"❌ Invalid Serial! সিরিয়াল {serialToDelete} এর কোনো রুম খুঁজে পাওয়া যায়নি।";
+            }
+            else
+            {
+                message = $"❌ ডিলিট করার সময় ত্রুটি: {ex.Message}";
+            }
+
+            statusClass = "alert-danger";
+        }
+        finally
+        {
+            // Re-enable the button
+            isDeleting = false;
+        }
+    }
+}

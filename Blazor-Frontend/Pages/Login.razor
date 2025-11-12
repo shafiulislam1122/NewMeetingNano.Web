@@ -1,0 +1,39 @@
+﻿@page "/login"
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Login</h3>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Username" @bind="loginModel.Username" />
+</div>
+<div class="mb-3">
+    <input class="form-control" type="password" placeholder="Password" @bind="loginModel.Password" />
+</div>
+<button class="btn btn-primary" @onclick="HandleLogin">Login</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="text-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    private LoginRequest loginModel = new();
+    private string errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var result = await AuthService.LoginAsync(loginModel);
+        if (result.IsSuccess)
+        {
+            if (result.Role == "Admin")
+                Navigation.NavigateTo("/admin/adminpanel");
+            else
+                Navigation.NavigateTo("/employee/employeepanel");
+        }
+        else
+        {
+            errorMessage = result.Message;
+        }
+    }
+}

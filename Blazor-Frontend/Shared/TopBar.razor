@@ -1,0 +1,26 @@
+﻿@inject JwtAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<div class="sidebar">
+    <ul>
+        @if (role == "Admin")
+        {
+            <li><a href="/adminpanel">Admin Panel</a></li>
+        }
+        else if (role == "Employee")
+        {
+            <li><a href="/employeepanel">Employee Panel</a></li>
+        }
+        <li><a href="/profile">Profile</a></li>
+    </ul>
+</div>
+
+@code {
+    private string role = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await AuthStateProvider.GetUserAsync();
+        role = user.Role;
+    }
+}

@@ -1,0 +1,28 @@
+﻿@page "/admin/meetingroom/details/{Id:guid}"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Room Details</h3>
+
+@if (room == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card p-3">
+        <p><strong>ID:</strong> @room.Id</p>
+        <p><strong>Name:</strong> @room.Name</p>
+        <p><strong>Capacity:</strong> @room.Capacity</p>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private MeetingRoomDto room;
+
+    protected override async Task OnInitializedAsync()
+    {
+        room = await ApiService.GetMeetingRoomById(Id);
+    }
+}

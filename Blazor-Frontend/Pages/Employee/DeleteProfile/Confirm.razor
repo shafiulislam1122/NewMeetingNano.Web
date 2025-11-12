@@ -1,0 +1,17 @@
+﻿@page "/employee/deleteprofile"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Are you sure you want to delete your profile?</h3>
+<button class="btn btn-danger" @onclick="DeleteProfileAsync">Yes, Delete</button>
+<button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+@code {
+    async Task DeleteProfileAsync()
+    {
+        await ApiService.DeleteProfile();
+        Navigation.NavigateTo("/employee/deleteprofile/success");
+    }
+
+    void Cancel() => Navigation.NavigateTo("/employee/employee");
+}

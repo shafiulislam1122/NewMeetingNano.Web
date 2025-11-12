@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <TopBar />
+    <div class="d-flex">
+        <NavMenu /> <!-- optional, sidebar -->
+        <div class="content p-3 flex-grow-1">
+            @Body
+        </div>
+    </div>
+</div>
+
+<style>
+    .main-layout {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .d-flex {
+        display: flex;
+        flex: 1;
+    }
+
+    .content {
+        overflow: auto;
+    }
+</style>

@@ -1,0 +1,102 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        
+        <AuthorizeView>
+            <Authorized>
+                @{
+                    // বর্তমান URL এর তুলনামূলক পাথ বের করা
+                    var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+                    
+                    // যে পেজগুলোতে লগআউট বাটন দেখাবে না
+                    bool isPublicPage = relativePath == "" ||  // Home page: /
+                                        relativePath == "login" ||
+                                        relativePath == "register";
+                    
+                    // লগইন করা আছে এবং পাবলিক পেজ নয়, তবেই বাটন দেখাও
+                    bool shouldShowLogout = !isPublicPage;
+                }
+
+                @if (shouldShowLogout)
+                {
+                    <div class="top-row px-4 d-flex justify-content-end align-items-center">
+                        <button class="btn btn-logout" @onclick="Logout">
+                            Logout
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="top-row px-4"></div>
+                }
+            </Authorized>
+            <NotAuthorized>
+                <div class="top-row px-4"></div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<style>
+    /* লগআউট বাটনের জন্য স্ট্যান্ডার্ড কালার: ডার্ক রেড মিশ্রিত গ্রেডিয়েন্ট */
+    .btn-logout {
+        color: white;
+        font-weight: bold;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        /* ডার্ক এবং লাইট রেড গ্রেডিয়েন্ট */
+        background: linear-gradient(135deg, #cc0000 0%, #800000 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s ease, transform 0.1s ease;
+    }
+
+    .btn-logout:hover {
+        background: linear-gradient(135deg, #ff3333 0%, #a60000 100%);
+        transform: translateY(-1px);
+    }
+    
+    .top-row {
+        height: 3.5rem;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+</style>
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+    
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+    
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+    
+    void Logout()
+    {
+        // এখানে সেশন বা অথেন্টিকেশন টোকেন ডিলিট করার কোড লিখুন।
+        Navigation.NavigateTo("/", true);
+    }
+}

@@ -1,0 +1,68 @@
+﻿@page "/signup"
+@using BlazorApp1.Services
+@inject AuthService AuthService
+
+<div class="signup-wrapper">
+    <div class="signup-card card p-4 shadow-lg">
+        <h3 class="text-center mb-3">Create an Account</h3>
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" placeholder="Enter your Full Name" @bind="signUpModel.FullName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" placeholder="Enter your Email" @bind="signUpModel.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" placeholder="Enter your Username" @bind="signUpModel.Username" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" placeholder="Enter password" @bind="signUpModel.Password" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Role</label>
+            <input type="text" class="form-control" placeholder="Enter your Role" @bind="signUpModel.Role" />
+        </div>
+
+        <button class="btn btn-success w-100" @onclick="HandleSignUp">Sign Up</button>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info mt-3">@message</div>
+        }
+    </div>
+</div>
+
+<style>
+    .signup-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 90vh;
+        padding: 20px;
+        background: #f8f9fa;
+    }
+
+    .signup-card {
+        width: 100%;
+        max-width: 400px;
+        border-radius: 15px;
+    }
+</style>
+
+@code {
+    private BlazorApp1.Client.Models.SignUpRequest signUpModel = new();
+    private string message = "";
+
+    private async Task HandleSignUp()
+    {
+        message = await AuthService.SignUpAsync(signUpModel);
+    }
+}

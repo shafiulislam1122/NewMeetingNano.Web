@@ -1,0 +1,9 @@
+﻿@inject NavigationManager Navigation
+
+<h3>Unauthorized Access</h3>
+<p>You are not authorized to access this page.</p>
+<button class="btn btn-primary" @onclick="GoLogin">Go to Login</button>
+
+@code {
+    void GoLogin() => Navigation.NavigateTo("/login");
+}

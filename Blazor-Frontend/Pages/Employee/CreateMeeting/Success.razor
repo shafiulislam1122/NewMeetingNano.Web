@@ -1,0 +1,9 @@
+﻿@page "/employee/createmeeting/success"
+
+<h3>Meeting Created Successfully!</h3>
+<button class="btn btn-primary" @onclick="GoBack">Go Back</button>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+    void GoBack() => Navigation.NavigateTo("/employee/meetingroomlist");
+}

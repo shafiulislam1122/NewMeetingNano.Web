@@ -1,0 +1,53 @@
+﻿@page "/employee/createmeeting"
+@inject ApiService ApiService
+@inject NavigationManager Navigation
+
+<h3>Create New Meeting</h3>
+
+<div class="card p-3">
+
+    <input class="form-control mb-2" placeholder="Meeting Title"
+           @bind="meeting.Title" />
+
+    <textarea class="form-control mb-2" placeholder="Description"
+              @bind="meeting.Description"></textarea>
+
+    <label>Start Time</label>
+    <input class="form-control mb-2" type="datetime-local"
+           @bind="meeting.StartTime" />
+
+    <label>End Time</label>
+    <input class="form-control mb-2" type="datetime-local"
+           @bind="meeting.EndTime" />
+
+    <label>Select Room</label>
+    <select class="form-control mb-2" @bind="meeting.RoomId">
+        <option value="">-- Select Meeting Room --</option>
+        @foreach (var r in rooms)
+        {
+            <option value="@r.Id">@r.Name</option>
+        }
+    </select>
+
+    <button class="btn btn-success mt-2" @onclick="CreateMeetingAsync">
+        Create
+    </button>
+
+</div>
+
+@code {
+    private MeetingCreateDto meeting = new MeetingCreateDto();
+    private List<MeetingRoomDto> rooms = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await ApiService.GetMeetingRooms();
+    }
+
+    async Task CreateMeetingAsync()
+    {
+        var success = await ApiService.CreateMeeting(meeting);
+        if (success)
+            Navigation.NavigateTo("/employee/createmeeting/success");
+    }
+}

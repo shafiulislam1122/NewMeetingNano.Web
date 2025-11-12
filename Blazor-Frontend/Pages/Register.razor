@@ -1,0 +1,54 @@
+﻿@page "/register"
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Register</h3>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Full Name" @bind="registerModel.FullName" />
+</div>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Email" @bind="registerModel.Email" />
+</div>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Username" @bind="registerModel.Username" />
+</div>
+
+<div class="mb-3">
+    <input class="form-control" type="password" placeholder="Password" @bind="registerModel.Password" />
+</div>
+
+<div class="mb-3">
+    <select class="form-select" @bind="registerModel.Role">
+        <option value="">Select Role</option>
+        <option value="Admin">Admin</option>
+        <option value="Employee">Employee</option>
+    </select>
+</div>
+
+<button class="btn btn-success" @onclick="HandleRegister">Register</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="text-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    private RegisterRequest registerModel = new();
+    private string errorMessage;
+
+    private async Task HandleRegister()
+    {
+        var result = await AuthService.RegisterAsync(registerModel);
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            errorMessage = result.Message;
+        }
+    }
+}

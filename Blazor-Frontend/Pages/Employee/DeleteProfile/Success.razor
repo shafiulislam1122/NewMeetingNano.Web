@@ -1,0 +1,9 @@
+﻿@page "/employee/deleteprofile/success"
+
+<h3>Profile Deleted Successfully!</h3>
+<button class="btn btn-primary" @onclick="GoBack">Go Back</button>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+    void GoBack() => Navigation.NavigateTo("/");
+}

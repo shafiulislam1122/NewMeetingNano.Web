@@ -1,0 +1,100 @@
+﻿@page "/createroom"
+@using BlazorApp1.Client.Services
+@using BlazorApp1.Services
+@layout MainLayout
+@inject MeetingRoomService RoomService
+@inject NavigationManager Navigation
+
+<div class="d-flex align-items-center mb-4">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+    <h3 class="mb-0 text-center w-100">➕ Create New Meeting Room</h3>
+</div>
+
+<p class="text-muted text-center">Fill out the details to add a new room.</p>
+
+<div class="d-flex justify-content-center">
+    <div class="card p-4 shadow-lg" style="max-width: 500px; width: 100%;">
+        <EditForm Model="@newRoom" OnValidSubmit="@HandleCreateRoom">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Room Name</label>
+                <InputText id="name" @bind-Value="newRoom.Name" class="form-control" placeholder="e.g., Conference Hall A" />
+            </div>
+
+            <div class="mb-3">
+                <label for="capacity" class="form-label">Capacity</label>
+                <InputNumber id="capacity" @bind-Value="newRoom.Capacity" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Location</label>
+                <InputText id="location" @bind-Value="newRoom.Location" class="form-control" placeholder="e.g., 3rd Floor, West Wing" />
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3 w-100" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>Create Room</span>
+                }
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert @statusClass mt-3">@message</div>
+        }
+    </div>
+</div>
+
+@code {
+    private MeetingRoom newRoom = new MeetingRoom();
+    private string message;
+    private string statusClass;
+    private bool isSubmitting = false;
+
+    private async Task HandleCreateRoom()
+    {
+        isSubmitting = true;
+        message = "";
+
+        try
+        {
+            await RoomService.CreateRoomAsync(newRoom);
+
+            message = $"Room '{newRoom.Name}' created successfully!";
+            statusClass = "alert-success";
+
+            newRoom = new MeetingRoom();
+
+            await Task.Delay(1200);
+            Navigation.NavigateTo("/meetingroomlist");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            message = "You are not authorized to create a room.";
+            statusClass = "alert-danger";
+        }
+        catch (Exception ex)
+        {
+            message = $"Creation failed: {ex.Message}";
+            statusClass = "alert-danger";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void HandleGoBack()
+    {
+        Navigation.NavigateTo("/adminpanel");
+    }
+}
