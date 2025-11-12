@@ -1,13 +1,12 @@
-﻿
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using BlazorApp1.Client.Models; // MeetingRoom মডেল
+using BlazorApp1.Client.Models; // MeetingRoom model
 using BlazorApp1.Client.DTOs;   // CreateMeetingRoomCommand DTO
-using Microsoft.AspNetCore.Components.Authorization;
 
 namespace BlazorApp1.Services
 {
@@ -105,7 +104,7 @@ namespace BlazorApp1.Services
 
             try
             {
-                return await _httpClient.GetFromJsonAsync<MeetingRoom>($"/api/MeetingRoom/MeetingRoom/{serial}");
+                return await _httpClient.GetFromJsonAsync<MeetingRoom>($"/api/Admin/MeetingRoom/{serial}");
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
@@ -118,17 +117,24 @@ namespace BlazorApp1.Services
         }
 
         // ============================
-        // Delete Room
-        // DELETE /api/MeetingRoom/MeetingRoom/{serial}
+        // Delete Room (Admin)
+        // DELETE /api/MeetingRoom/Delete/{serial}
         // ============================
         public async Task DeleteRoomAsync(int serial)
         {
             await AddJwtHeaderAsync();
 
-            var response = await _httpClient.DeleteAsync($"/api/MeetingRoom/MeetingRoom/{serial}");
+            var response = await _httpClient.DeleteAsync($"/api/Admin/MeetingRoom/{serial}");
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new Exception($"Room with serial {serial} not found.");
+            }
 
             if (!response.IsSuccessStatusCode)
+            {
                 throw new Exception($"Failed to delete room with serial {serial}. Status code: {response.StatusCode}");
+            }
         }
     }
 }

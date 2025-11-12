@@ -4,7 +4,6 @@
 @inject NavigationManager Navigation
 
 <div class="d-flex justify-content-center">
-
     <div class="card p-4 mt-3" style="max-width:500px;">
         <h3 class="text-center">Login</h3>
 
@@ -21,18 +20,21 @@
         </div>
 
         <button class="btn btn-primary w-100" @onclick="HandleLogin">Login</button>
-
-        @if (!string.IsNullOrEmpty(message))
-        {
-            <div class="alert alert-info mt-2">@message</div>
-        }
     </div>
-
 </div>
+
+@if (showToast)
+{
+    <div class="toast-message @toastCssClass">
+        @toastMessage
+    </div>
+}
 
 @code {
     private BlazorApp1.Client.Models.LoginRequest loginModel = new();
-    private string message = "";
+    private bool showToast = false;
+    private string toastMessage = "";
+    private string toastCssClass = "";
 
     private async Task HandleLogin()
     {
@@ -40,26 +42,31 @@
 
         if (result != null && result.IsAuthenticated)
         {
-            // ✅ Show message
-            message = $"Welcome {result.Role}! Redirecting...";
-
-            // ✅ Role based navigation
-            if (result.Role == "Admin")
-            {
-                Navigation.NavigateTo("/adminpanel");
-            }
-            else if (result.Role == "Employee")
-            {
-                Navigation.NavigateTo("/employeepanel");
-            }
-            else
-            {
-                Navigation.NavigateTo("/");
-            }
+            toastMessage = $"Successfully logged in as {result.Role}!";
+            toastCssClass = "toast-success";
         }
         else
         {
-            message = "Login Failed!";
+            toastMessage = "Login Failed!";
+            toastCssClass = "toast-fail";
+        }
+
+        showToast = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        showToast = false;
+
+        // Navigate if login success
+        if (result != null && result.IsAuthenticated)
+        {
+            if (result.Role == "Admin")
+                Navigation.NavigateTo("/adminpanel");
+            else if (result.Role == "Employee")
+                Navigation.NavigateTo("/employeepanel");
+            else
+                Navigation.NavigateTo("/");
         }
     }
 }

@@ -1,35 +1,17 @@
 ﻿@page "/signup"
 @using BlazorApp1.Services
 @inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <div class="signup-wrapper">
     <div class="signup-card card p-4 shadow-lg">
         <h3 class="text-center mb-3">Create an Account</h3>
 
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" placeholder="Enter your Full Name" @bind="signUpModel.FullName" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" placeholder="Enter your Email" @bind="signUpModel.Email" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" class="form-control" placeholder="Enter your Username" @bind="signUpModel.Username" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control" placeholder="Enter password" @bind="signUpModel.Password" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Role</label>
-            <input type="text" class="form-control" placeholder="Enter your Role" @bind="signUpModel.Role" />
-        </div>
+        <input class="form-control mb-3" placeholder="Full Name" @bind="signUpModel.FullName" />
+        <input class="form-control mb-3" placeholder="Email" @bind="signUpModel.Email" />
+        <input class="form-control mb-3" placeholder="Username" @bind="signUpModel.Username" />
+        <input class="form-control mb-3" placeholder="Password" type="password" @bind="signUpModel.Password" />
+        <input class="form-control mb-3" placeholder="Role" @bind="signUpModel.Role" />
 
         <button class="btn btn-success w-100" @onclick="HandleSignUp">Sign Up</button>
 
@@ -46,7 +28,6 @@
         justify-content: center;
         align-items: center;
         min-height: 90vh;
-        padding: 20px;
         background: #f8f9fa;
     }
 
@@ -64,5 +45,15 @@
     private async Task HandleSignUp()
     {
         message = await AuthService.SignUpAsync(signUpModel);
+
+        // Show message for 1.5 seconds
+        StateHasChanged(); // update UI
+        await Task.Delay(1500);
+
+        // Navigate to login page if signup successful
+        if (!string.IsNullOrEmpty(message) && message.ToLower().Contains("success"))
+        {
+            Navigation.NavigateTo("/login");
+        }
     }
 }
