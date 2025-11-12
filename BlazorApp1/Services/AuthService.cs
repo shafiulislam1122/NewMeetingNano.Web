@@ -14,9 +14,6 @@ namespace BlazorApp1.Services
             _tokenProvider = tokenProvider;
         }
 
-
-
-        //ttttt
         // Login method
         public async Task<AuthResponse> LoginAsync(LoginRequest loginModel)
         {
