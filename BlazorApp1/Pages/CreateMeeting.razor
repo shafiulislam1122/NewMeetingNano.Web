@@ -1,0 +1,172 @@
+﻿@page "/createmeeting"
+@using BlazorApp1.Client.Models
+@using BlazorApp1.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@layout MainLayout
+@inject MeetingRoomService RoomService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="d-flex align-items-center mb-4">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+    <h3 class="mb-0 text-center w-100">➕ Create New Meeting</h3>
+</div>
+
+<p class="text-muted text-center">Fill out the details to add a new meeting.</p>
+
+<div class="d-flex justify-content-center">
+    <div class="card p-4 shadow-lg" style="max-width: 500px; width: 100%;">
+        <EditForm Model="@newMeeting" OnValidSubmit="@HandleCreateMeeting">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label">Meeting Name</label>
+                <InputText @bind-Value="newMeeting.Name" class="form-control" placeholder="e.g., Team Sync" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Capacity</label>
+                <InputNumber @bind-Value="newMeeting.Capacity" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <InputText @bind-Value="newMeeting.Location" class="form-control" placeholder="e.g., 3rd Floor, West Wing" />
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3 w-100" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>Create Meeting</span>
+                }
+            </button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="popup-message">@message</div>
+        }
+    </div>
+</div>
+
+<style>
+    .back-btn-vibrant {
+        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
+        color: #182848;
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+    }
+
+        .back-btn-vibrant:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
+            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+        }
+
+    /* Popup message style */
+    .popup-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        animation: fadeInOut 2s ease-in-out;
+        z-index: 9999;
+    }
+
+    @keyframes fadeInOut {
+        0%
+
+    {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    }
+</style>
+
+@code {
+    private Meeting newMeeting = new Meeting();
+    private string message = "";
+    private bool isSubmitting = false;
+
+    private async Task HandleCreateMeeting()
+    {
+        isSubmitting = true;
+        message = "";
+
+        try
+        {
+            // Convert Meeting → MeetingRoom for API
+            var room = new MeetingRoom
+            {
+                Name = newMeeting.Name,
+                Role = "Employee", // fixed role
+                Capacity = newMeeting.Capacity,
+                Location = newMeeting.Location,
+                CreatedAt = DateTime.Now
+            };
+
+            await RoomService.CreateRoomEmployeeAsync(room);
+
+            // ✅ Show popup
+            message = $"✅ Meeting '{newMeeting.Name}' created successfully!";
+
+            newMeeting = new Meeting(); // reset form
+
+            // Wait 1.5 seconds before redirect
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/meetingroomlist");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            message = "You are not authorized to create a meeting.";
+        }
+        catch (Exception ex)
+        {
+            message = $"Creation failed: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task HandleGoBack()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.IsInRole("Employee"))
+            Navigation.NavigateTo("/employeepanel");
+        else
+            Navigation.NavigateTo("/");
+    }
+}

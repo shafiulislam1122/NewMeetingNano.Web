@@ -1,12 +1,12 @@
-﻿using System;
+﻿using BlazorApp1.Client.DTOs;   // CreateMeetingRoomCommand DTO
+using BlazorApp1.Client.Models; // MeetingRoom model
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using BlazorApp1.Client.Models; // MeetingRoom model
-using BlazorApp1.Client.DTOs;   // CreateMeetingRoomCommand DTO
 
 namespace BlazorApp1.Services
 {
@@ -135,6 +135,19 @@ namespace BlazorApp1.Services
             {
                 throw new Exception($"Failed to delete room with serial {serial}. Status code: {response.StatusCode}");
             }
+
         }
+
+
+        public async Task CreateMeetingEmployeeAsync(Meeting newMeeting)
+        {
+            await AddJwtHeaderAsync();
+
+            var response = await _httpClient.PostAsJsonAsync("/api/Employee/Create-Meeting", newMeeting);
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Employee: Failed to create meeting. Status code: {response.StatusCode}");
+        }
+
     }
 }
