@@ -1,7 +1,33 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<div class="home-wrapper text-center">
+    <h2 class="welcome-text">Welcome to our Meeting Room Center</h2>
+    <img src="images/NewMeetingRoomnano.jpg" alt="Meeting Room" class="home-image" />
+</div>
 
-<h1>Hello, world!</h1>
+<style>
+    .home-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 90vh;
+        background-color: #f8f9fa;
+        padding: 20px;
+    }
 
-Welcome to your new app.
+    .welcome-text {
+        font-size: 2.5rem; /* বড় font */
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .home-image {
+        width: 90%; /* এখানে ছবি বড় করা হলো */
+        max-width: 1200px; /* optional: 너무 বড় হলে সীমা */
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+</style>

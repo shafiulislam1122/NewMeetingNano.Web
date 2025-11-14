@@ -7,7 +7,6 @@
 @inject NavigationManager Navigation
 @inject MeetingRoomService RoomService
 
-<!-- Back Button (Top Left) -->
 <div class="d-flex align-items-center mb-3">
     <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
         <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
@@ -17,13 +16,12 @@
 
 <p class="text-muted">Live search by Name or Serial.</p>
 
-<!-- Dynamic Search Input -->
 <div class="mb-3">
     <input type="text"
-           class="form-control"
-           placeholder="Type name or serial..."
-           @bind="searchText"
-           @oninput="OnSearchChanged" />
+                 class="form-control"
+                 placeholder="Type name or serial..."
+                 @bind="searchText"
+                 @oninput="OnSearchChanged" />
 </div>
 
 @if (!string.IsNullOrEmpty(errorMessage))
@@ -60,21 +58,23 @@ else
 }
 
 <style>
-    .back-btn-vibrant {
-        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
-        color: #182848;
-        border: none;
-        font-weight: bold;
-        transition: transform 0.2s, box-shadow 0.3s;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        padding: 0.5rem 1rem;
+        .back-btn-vibrant {
+                background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
+                color: #182848;
+                border: none;
+                font-weight: bold;
+                transition: transform 0.2s, box-shadow 0.3s;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                padding: 0.5rem 1rem;
+
     }
 
-        .back-btn-vibrant:hover {
-            transform: translateY(-2px);
-            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
-            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
-        }
+            .back-btn-vibrant:hover {
+                    transform: translateY(-2px);
+                    background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
+                    box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+
+    }
 </style>
 
 @code {
@@ -88,8 +88,8 @@ else
     {
         try
         {
-            // Get user role
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            // Get user role
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
             if (user.IsInRole("Admin"))
@@ -97,8 +97,8 @@ else
             else if (user.IsInRole("Employee"))
                 userRole = "Employee";
 
-            // Load meeting rooms
-            rooms = await RoomService.GetAllRoomsAsync();
+            // Load meeting rooms
+            rooms = await RoomService.GetAllRoomsAsync();
             filteredRooms = new List<MeetingRoom>(rooms);
         }
         catch (Exception ex)
@@ -118,16 +118,30 @@ else
         }
 
         filteredRooms = rooms
-            .Where(r =>
-                r.Name.ToLower().Contains(searchText) ||
-                r.Serial.ToString().Contains(searchText)
-            )
-            .ToList();
+          .Where(r =>
+            r.Name.ToLower().Contains(searchText) ||
+            r.Serial.ToString().Contains(searchText)
+          )
+          .ToList();
     }
 
-    private void HandleGoBack()
+    // 🌟 HandleGoBack মেথডটি async করা হয়েছে এবং রোল লোডিং লজিক যোগ করা হয়েছে 🌟
+    private async Task HandleGoBack()
     {
-        if (userRole == "Admin")
+        // নেভিগেট করার আগে রোলটি নিশ্চিত করতে হবে
+        if (string.IsNullOrEmpty(userRole))
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.IsInRole("Admin"))
+                userRole = "Admin";
+            else if (user.IsInRole("Employee"))
+                userRole = "Employee";
+        }
+
+        // রোল অনুযায়ী নেভিগেশন
+        if (userRole == "Admin")
             Navigation.NavigateTo("/adminpanel");
         else if (userRole == "Employee")
             Navigation.NavigateTo("/employeepanel");

@@ -3,7 +3,6 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using System.Collections.Generic;
-using System.Data;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
@@ -90,6 +89,14 @@ namespace Infrastructure.Repositories
             using var connection = _context.CreateConnection();
             var users = await connection.QueryAsync<User>(query);
             return users.AsList();
+        }
+
+        // Get user by name and password (for login)
+        public async Task<User> GetByNamePasswordAsync(string name, string password)
+        {
+            var query = "SELECT * FROM Users WHERE FullName = @Name AND PasswordHash = @Password";
+            using var connection = _context.CreateConnection();
+            return await connection.QuerySingleOrDefaultAsync<User>(query, new { Name = name, Password = password });
         }
     }
 }

@@ -1,5 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@using BlazorApp1.Services
+@using BlazorApp1.Client.Models
+@inject INotificationService NotificationService
+
 @implements IDisposable
 
 <div class="page">
@@ -8,95 +12,225 @@
     </div>
 
     <main>
-        
         <AuthorizeView>
             <Authorized>
                 @{
-                    // বর্তমান URL এর তুলনামূলক পাথ বের করা
                     var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
-                    
-                    // যে পেজগুলোতে লগআউট বাটন দেখাবে না
-                    bool isPublicPage = relativePath == "" ||  // Home page: /
-                                        relativePath == "login" ||
-                                        relativePath == "register";
-                    
-                    // লগইন করা আছে এবং পাবলিক পেজ নয়, তবেই বাটন দেখাও
+                    bool isPublicPage = relativePath == "" || relativePath == "login" || relativePath == "register";
                     bool shouldShowLogout = !isPublicPage;
+                    bool isAdminPage = relativePath.Contains("adminpanel"); // শুধুমাত্র admin
                 }
 
                 @if (shouldShowLogout)
                 {
                     <div class="top-row px-4 d-flex justify-content-end align-items-center">
-                        <button class="btn btn-logout" @onclick="Logout">
+
+                        <button class="btn btn-logout me-3" @onclick="Logout">
                             Logout
                         </button>
+                        @if (isAdminPage)
+                        {
+                            <div class="notification-wrapper position-relative">
+                                <button class="btn btn-notify" @onclick="ToggleNotifications">
+                                    🔔
+                                    @if (unreadCount > 0)
+                                    {
+                                        <span class="badge">@unreadCount</span>
+                                    }
+                                </button>
+                                @if (showDropdown)
+                                {
+                                    <div class="notification-dropdown shadow-lg">
+                                        @if (notifications?.Count > 0)
+                                        {
+                                            @foreach (var n in notifications)
+                                            {
+                                                <div class="notification-item">
+                                                    <strong>@n.Message</strong>
+                                                    <br />
+                                                    <small>@n.CreatedAt.ToLocalTime()</small>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="notification-item">No new notifications</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
-                }
-                else
-                {
-                    <div class="top-row px-4"></div>
                 }
             </Authorized>
             <NotAuthorized>
-                <div class="top-row px-4"></div>
             </NotAuthorized>
         </AuthorizeView>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+        @{
+            var currentPath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+            // login বা register পেজের জন্য বিশেষ কন্টেইনার ক্লাস যুক্ত করা হচ্ছে
+            var containerClass = (currentPath == "login" || currentPath == "register") ? "login-page-container" : "content-wrapper";
+        }
+
+        <div class="@containerClass">
+            <article class="content px-4">
+                @Body
+            </article>
+        </div>
+        </main>
 </div>
 
 <style>
-    /* লগআউট বাটনের জন্য স্ট্যান্ডার্ড কালার: ডার্ক রেড মিশ্রিত গ্রেডিয়েন্ট */
-    .btn-logout {
-        color: white;
-        font-weight: bold;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        /* ডার্ক এবং লাইট রেড গ্রেডিয়েন্ট */
-        background: linear-gradient(135deg, #cc0000 0%, #800000 100%);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        transition: background 0.3s ease, transform 0.1s ease;
+    /* *** নতুন CSS যোগ করা হয়েছে এইখানে (Login Centering এর জন্য) ***
+    */
+    .login-page-container {
+        /* পুরো স্ক্রীন কভার করবে (sidebar ছাড়া) */
+        height: 100vh; 
+        /* ফ্লেক্সবক্স দিয়ে কন্টেন্ট কে মাঝখানে আনা হচ্ছে */
+        display: flex;
+        justify-content: center; /* অনুভূমিকভাবে (Horizontal) মাঝখানে */
+        align-items: center; /* উল্লম্বভাবে (Vertical) মাঝখানে */
+        padding: 0;
+        margin: 0;
     }
 
-    .btn-logout:hover {
-        background: linear-gradient(135deg, #ff3333 0%, #a60000 100%);
-        transform: translateY(-1px);
+    .content-wrapper {
+        padding-top: 1.1rem;
     }
-    
+
+    /* Login বক্সের আকার বড় করার জন্য CSS - আপনার Login Component এর ক্লাসের সাথে মিলিয়ে নিন */
+    .login-page-container .login-card { 
+        width: 100%; 
+        max-width: 450px; /* ডেস্কটপে কিছুটা বড় বক্স */
+        padding: 2.5rem; 
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); 
+        border-radius: 12px;
+    }
+
+    /* *** নিচের পুরানো CSS-গুলি অপরিবর্তিত আছে ***
+    */
     .top-row {
         height: 3.5rem;
         background-color: #f7f7f7;
         display: flex;
-        justify-content: flex-end;
+        justify-content: flex-end; /* Right side */
         align-items: center;
+        padding-right: 1rem;
     }
+
+    /* 🌟 Logout বোতাম এবং Notification এর মাঝে কিছুটা স্পেস যোগ করার জন্য 
+       Logout বোতামে `me-3` (margin-end: 3) ক্লাসটি উপরে যুক্ত করা হয়েছে। 
+    */
+    .btn-logout {
+        color: white;
+        font-weight: bold;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #ff6b6b 0%, #c70039 100%);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.1s ease, background 0.3s ease;
+    }
+    .btn-logout:hover {
+        background: linear-gradient(135deg, #ff8787 0%, #ff1744 100%);
+        transform: translateY(-2px);
+    }
+
+    .notification-wrapper {
+        position: relative;
+    }
+
+    .btn-notify {
+        position: relative;
+        background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+        color: #222;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        cursor: pointer;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        transition: transform 0.2s, background 0.3s;
+    }
+    .btn-notify:hover { transform: translateY(-2px); }
+
+    .badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background-color: #e53935;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .notification-dropdown {
+        position: absolute;
+        right: 0;
+        top: 2.8rem;
+        width: 320px;
+        max-height: 400px;
+        overflow-y: auto;
+        background-color: #fffde7;
+        border: 1px solid #ffca28;
+        border-radius: 8px;
+        z-index: 1000;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        padding: 0.5rem;
+    }
+
+    .notification-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #fff9c4;
+    }
+    .notification-item:last-child { border-bottom: none; }
 </style>
 
-
 @code {
-    protected override void OnInitialized()
+    private List<Notification> notifications = new();
+    private int unreadCount = 0;
+    private bool showDropdown = false;
+
+    protected override async Task OnInitializedAsync()
     {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri).ToLowerInvariant();
+        if (relativePath.Contains("adminpanel"))
+        {
+            await LoadNotifications();
+        }
         Navigation.LocationChanged += OnLocationChanged;
     }
-    
-    public void Dispose()
+
+    private async Task LoadNotifications()
     {
-        Navigation.LocationChanged -= OnLocationChanged;
+        // Ensure non-null list and update count
+        notifications = await NotificationService.GetUnreadNotificationsAsync() ?? new List<Notification>();
+        unreadCount = notifications.Count;
     }
-    
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+
+    // ⭐ ToggleNotifications মেথড আপডেট করা হলো ডেটা রি-লোড নিশ্চিত করার জন্য ⭐
+    private async void ToggleNotifications()
+    {
+        showDropdown = !showDropdown;
+
+        if (showDropdown)
+        {
+            await LoadNotifications(); // ড্রপডাউন খোলার সময় ডেটা লোড করো
+        }
+        
+        StateHasChanged(); 
+    }
+
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
         StateHasChanged();
     }
-    
-    void Logout()
-    {
-        // এখানে সেশন বা অথেন্টিকেশন টোকেন ডিলিট করার কোড লিখুন।
-        Navigation.NavigateTo("/", true);
-    }
+
+    void Logout() => Navigation.NavigateTo("/", true);
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
 }

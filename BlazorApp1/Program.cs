@@ -3,6 +3,7 @@ using BlazorApp1.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 
@@ -16,6 +17,7 @@ builder.Services.AddScoped(sp => new HttpClient
 builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtAuthStateProvider>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<AuthenticationStateProvider>(
     provider => provider.GetRequiredService<JwtAuthStateProvider>()
 );

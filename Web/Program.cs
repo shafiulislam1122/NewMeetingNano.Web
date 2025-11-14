@@ -29,6 +29,11 @@ builder.Services.AddScoped<IMeetingRoomRepository, MeetingRoomRepository>();
 // -----------------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+//Notification bar /////
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+//////////////////
+
 // -----------------------------
 // 4️⃣ JWT Authentication
 // -----------------------------

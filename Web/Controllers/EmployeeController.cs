@@ -29,7 +29,7 @@ namespace Web.Controllers
             var room = new MeetingRoom
             {
                 Name = dto.Name,
-                Role = "Employee",   // ✅ NEW
+                Role = "Employee",
                 Capacity = dto.Capacity,
                 Location = dto.Location
             };
@@ -52,12 +52,28 @@ namespace Web.Controllers
             return Ok("Profile Updated");
         }
 
-        // ✅ Delete Profile
+        // ✅ Delete Profile by UserId (existing)
         [HttpDelete("Delete-Profile")]
         public async Task<IActionResult> DeleteProfile(DeleteProfileCommand cmd)
         {
             await _userRepository.DeleteAsync(cmd.UserId);
             return Ok("Profile Deleted");
+        }
+
+        // ✅ New: Delete Profile by Name + Password
+        [HttpDelete("Delete-Profile-ByNamePassword")]
+        public async Task<IActionResult> DeleteProfileByNamePassword([FromBody] DeleteByNamePasswordRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Password))
+                return BadRequest("Name and Password are required.");
+
+            // Find user by Name + Password (replace with hashed verification in production)
+            var user = await _userRepository.GetByNamePasswordAsync(request.Name, request.Password);
+            if (user == null)
+                return NotFound("User not found or password incorrect.");
+
+            await _userRepository.DeleteAsync(user.Id);
+            return Ok("User successfully deleted.");
         }
 
         // ✅ Get All Meeting Rooms
@@ -67,5 +83,12 @@ namespace Web.Controllers
             var rooms = await _meetingRoomRepository.GetAllAsync();
             return Ok(rooms);
         }
+    }
+
+    // ✅ New DTO for Name + Password delete
+    public class DeleteByNamePasswordRequest
+    {
+        public string Name { get; set; }
+        public string Password { get; set; }
     }
 }
