@@ -1,11 +1,50 @@
 ﻿@page "/adminpanel"
 @inject NavigationManager Navigation
+@inject BlazorApp1.Services.INotificationService NotificationService
 
 <h3 class="mb-4">Admin Panel</h3>
 
 <div class="welcome-message mb-5 text-center">
     <h1>Welcome to Admin Panel</h1>
     <p class="lead text-muted">Manage all meeting room operations from here.</p>
+</div>
+
+<!-- ✅ Notification Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4>Notifications</h4>
+
+        @if (notifications == null)
+        {
+            <p>Loading...</p>
+        }
+        else if (notifications.Count == 0)
+        {
+            <p>No new notifications.</p>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Message</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (n, index) in notifications.Select((n, i) => (n, i + 1)))
+                    {
+                        <tr>
+                            <td>@index</td>
+                            <td>@n.Message</td>
+                            <td>@n.CreatedAt.ToString("g")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
 </div>
 
 <div class="row">
@@ -43,7 +82,7 @@
         </div>
     </div>
 
-    <!-- ✅ 4. Delete Meeting Room (FIXED ✅) -->
+    <!-- ✅ 4. Delete Meeting Room -->
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="card text-white h-100 shadow-sm gradient-card-4-final custom-panel-card"
              @onclick="() => GoTo(DeleteRoom)">
@@ -99,9 +138,14 @@
     private string MeetingRoomList = "/meetingroomlist";
     private string CreateRoom = "/createroom";
     private string RoomDetailsBySerial = "/roomdetailsbyserial";
-
-    // ✅ FIXED: Delete Room route
     private string DeleteRoom = "/deleteroom";
+
+    private List<BlazorApp1.Client.Models.Notification> notifications;
+
+    protected override async Task OnInitializedAsync()
+    {
+        notifications = await NotificationService.GetUnreadNotificationsAsync();
+    }
 
     void GoTo(string url)
     {

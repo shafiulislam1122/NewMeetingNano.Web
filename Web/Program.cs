@@ -1,13 +1,15 @@
-﻿using Infrastructure.Data;
+﻿using Application.Services;
+using Domain.Interfaces;
+using FluentValidation.AspNetCore;
+using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
-using Application.Services;
-using Domain.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Text;
-using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,13 +31,19 @@ builder.Services.AddScoped<IMeetingRoomRepository, MeetingRoomRepository>();
 // -----------------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-//Notification bar /////
-builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-
-//////////////////
+// -----------------------------
+// 4️⃣ AppDbContext DI (EF Core for Notifications)
+// -----------------------------
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // -----------------------------
-// 4️⃣ JWT Authentication
+// 5️⃣ Notification Repository DI
+// -----------------------------
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+// -----------------------------
+// 6️⃣ JWT Authentication
 // -----------------------------
 var jwtSettingsSection = builder.Configuration.GetSection("Jwt");
 if (!jwtSettingsSection.Exists())
@@ -67,7 +75,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // -----------------------------
-// 5️⃣ Swagger
+// 7️⃣ Swagger
 // -----------------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -98,7 +106,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // -----------------------------
-// 6️⃣ CORS
+// 8️⃣ CORS
 // -----------------------------
 builder.Services.AddCors(options =>
 {
@@ -113,7 +121,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // -----------------------------
-// 7️⃣ Middleware
+// 9️⃣ Middleware
 // -----------------------------
 if (app.Environment.IsDevelopment())
 {

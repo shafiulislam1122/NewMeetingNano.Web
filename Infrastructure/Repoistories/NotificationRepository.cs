@@ -1,41 +1,48 @@
-﻿using Dapper;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Domain.Interfaces;
-using Infrastructure.Data; // যেটা আপনার DapperContext
+using Microsoft.EntityFrameworkCore;
+using Infrastructure.Data;  // jekhane AppDbContext ache
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
     public class NotificationRepository : INotificationRepository
     {
-        private readonly DapperContext _context;
+        private readonly AppDbContext _context;
 
-        public NotificationRepository(DapperContext context)
+        public NotificationRepository(AppDbContext context)
         {
             _context = context;
         }
 
+        // ✅ Add notification to DB
         public async Task AddAsync(Notification notification)
         {
-            var query = "INSERT INTO Notifications (Message, CreatedAt, IsRead) VALUES (@Message, @CreatedAt, @IsRead)";
-            using var conn = _context.CreateConnection();
-            await conn.ExecuteAsync(query, notification);
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
         }
 
+        // ✅ Get all unread notifications, ordered by CreatedAt desc
         public async Task<List<Notification>> GetUnreadAsync()
         {
-            var query = "SELECT * FROM Notifications WHERE IsRead = 0 ORDER BY CreatedAt DESC";
-            using var conn = _context.CreateConnection();
-            var result = await conn.QueryAsync<Notification>(query);
-            return result.AsList();
+            return await _context.Notifications
+                                 .Where(n => !n.IsRead)
+                                 .OrderByDescending(n => n.CreatedAt)
+                                 .ToListAsync();
         }
 
+        // ✅ Mark a notification as read
         public async Task MarkAsReadAsync(int id)
         {
-            var query = "UPDATE Notifications SET IsRead = 1 WHERE Id = @Id";
-            using var conn = _context.CreateConnection();
-            await conn.ExecuteAsync(query, new { Id = id });
+            var noti = await _context.Notifications.FindAsync(id);
+            if (noti != null)
+            {
+                noti.IsRead = true;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
