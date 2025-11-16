@@ -3,28 +3,24 @@ using BlazorApp1.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 
-// ✅ Shared HttpClient (optional but good)
+// HttpClient
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("https://localhost:7057/")
 });
 
-// ✅ JWT/Auth services
+// JWT/Auth
 builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<AuthenticationStateProvider>(
-    provider => provider.GetRequiredService<JwtAuthStateProvider>()
-);
-
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<JwtAuthStateProvider>());
 builder.Services.AddAuthorizationCore();
 
-// ✅ ✅ Correct MeetingRoomService registration
+// MeetingRoomService
 builder.Services.AddHttpClient<MeetingRoomService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7057/");

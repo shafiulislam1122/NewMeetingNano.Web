@@ -15,11 +15,11 @@ namespace Infrastructure.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IIUserRepository _userRepository;
         private readonly IConfiguration _configuration;
         private readonly PasswordHasher<User> _passwordHasher;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(IIUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _configuration = configuration;

@@ -1,4 +1,6 @@
-﻿using Application.Services;
+﻿// Program.cs
+
+using Application.Services;
 using Domain.Interfaces;
 using FluentValidation.AspNetCore;
 using Infrastructure.Data;
@@ -23,7 +25,7 @@ builder.Services.AddControllers()
 // 2️⃣ Dapper Repositories DI
 // -----------------------------
 builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IIUserRepository, UserRepository>();
 builder.Services.AddScoped<IMeetingRoomRepository, MeetingRoomRepository>();
 
 // -----------------------------

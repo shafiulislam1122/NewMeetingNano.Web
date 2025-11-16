@@ -1,0 +1,111 @@
+﻿@page "/employeedelete"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using System.Net.Http.Json
+
+<div class="d-flex align-items-center mb-4">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+        <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
+    </button>
+
+    <h3 class="d-flex align-items-center mb-0 ml-3">
+        <span class="oi oi-trash mr-2" style="font-size:1.4rem; color:#ff4d4d;"></span>
+        Delete Employee
+    </h3>
+</div>
+
+<div class="card shadow-lg p-4" style="max-width:400px; margin:auto; border-radius:12px;">
+    <div class="mb-3">
+        <input @bind="Name" placeholder="Employee Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <input @bind="Email" type="email" placeholder="Employee Email" class="form-control" />
+    </div>
+    <button class="btn btn-danger w-100" @onclick="DeleteEmployeeAsync">Delete Employee</button>
+
+    @if (!string.IsNullOrEmpty(Message))
+    {
+    <div class="alert mt-2 @(IsError ? " alert-danger" : "alert-success" )">
+        @Message
+    </div>
+    }
+</div>
+
+<style>
+    .back-btn-vibrant {
+        background: linear-gradient(45deg, #A8E063 0%, #56AB2F 100%);
+        color: #182848;
+        border: none;
+        font-weight: bold;
+        transition: transform 0.2s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1rem;
+    }
+
+        .back-btn-vibrant:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(45deg, #74a83b 0%, #468c24 100%);
+            box-shadow: 0 8px 15px rgba(24, 40, 72, 0.4);
+        }
+</style>
+
+@code {
+    private string Name;
+    private string Email;
+    private string Message;
+    private bool IsError;
+
+    public class DeleteEmployeeDto
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+    }
+
+    private async Task DeleteEmployeeAsync()
+    {
+        Message = "";
+        IsError = false;
+
+        if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Email))
+        {
+            Message = "Please fill all fields.";
+            IsError = true;
+            return;
+        }
+
+        try
+        {
+            var dto = new DeleteEmployeeDto { Name = Name, Email = Email };
+
+            // ✅ No JWT, direct POST request
+            var response = await Http.PostAsJsonAsync("api/Employee/Delete-Profile-ByNameEmail", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Message = "Employee deleted successfully!";
+                IsError = false;
+                StateHasChanged();
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Message = string.IsNullOrEmpty(error) ? "Failed to delete employee." : error;
+                IsError = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error: {ex.Message}";
+            IsError = true;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleGoBack()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

@@ -9,47 +9,8 @@
     <p class="lead text-muted">Manage all meeting room operations from here.</p>
 </div>
 
-<!-- ✅ Notification Section -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h4>Notifications</h4>
-
-        @if (notifications == null)
-        {
-            <p>Loading...</p>
-        }
-        else if (notifications.Count == 0)
-        {
-            <p>No new notifications.</p>
-        }
-        else
-        {
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Message</th>
-                        <th>Created At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var (n, index) in notifications.Select((n, i) => (n, i + 1)))
-                    {
-                        <tr>
-                            <td>@index</td>
-                            <td>@n.Message</td>
-                            <td>@n.CreatedAt.ToString("g")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    </div>
-</div>
-
 <div class="row">
 
-    <!-- ✅ 1. Meeting Room List -->
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="card text-white h-100 shadow-sm gradient-card-1 custom-panel-card"
              @onclick="() => GoTo(MeetingRoomList)">
@@ -60,7 +21,6 @@
         </div>
     </div>
 
-    <!-- ✅ 2. Create Meeting Room -->
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="card text-white h-100 shadow-sm gradient-card-2-final custom-panel-card"
              @onclick="() => GoTo(CreateRoom)">
@@ -71,7 +31,6 @@
         </div>
     </div>
 
-    <!-- ✅ 3. Room Details by Serial -->
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="card text-white h-100 shadow-sm gradient-card-3 custom-panel-card"
              @onclick="() => GoTo(RoomDetailsBySerial)">
@@ -82,7 +41,6 @@
         </div>
     </div>
 
-    <!-- ✅ 4. Delete Meeting Room -->
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="card text-white h-100 shadow-sm gradient-card-4-final custom-panel-card"
              @onclick="() => GoTo(DeleteRoom)">
@@ -140,11 +98,16 @@
     private string RoomDetailsBySerial = "/roomdetailsbyserial";
     private string DeleteRoom = "/deleteroom";
 
-    private List<BlazorApp1.Client.Models.Notification> notifications;
+    // REMOVED: private List<BlazorApp1.Client.Models.Notification> notifications;
 
-    protected override async Task OnInitializedAsync()
+    // REMOVED: The dependency injection for NotificationService is no longer needed in the code block,
+    // but I'm leaving it at the top for safety in case other parts of the app rely on it.
+    // However, I've removed the OnInitializedAsync method that used it.
+
+    protected override Task OnInitializedAsync()
     {
-        notifications = await NotificationService.GetUnreadNotificationsAsync();
+        // Removed code to load notifications.
+        return Task.CompletedTask;
     }
 
     void GoTo(string url)

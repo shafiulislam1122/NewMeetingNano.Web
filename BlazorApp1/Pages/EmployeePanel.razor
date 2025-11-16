@@ -27,7 +27,7 @@
     </div>
 
     <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card text-white h-100 shadow-sm gradient-emp-3-final custom-panel-card" @onclick="() => GoTo(DeleteProfile)">
+        <div class="card text-white h-100 shadow-sm gradient-emp-3-final custom-panel-card" @onclick="() => GoTo(DeleteEmployee)">
             <div class="card-body d-flex flex-column justify-content-center align-items-center">
                 <h5 class="card-title text-uppercase font-weight-bold">Delete Profile</h5>
                 <p class="card-text">Request removal of your data.</p>
@@ -78,7 +78,7 @@
         transition: transform 0.3s, box-shadow 0.3s;
         min-height: 150px !important;
         border: none !important;
-        color: #ffffff !important; /* ensure text is visible on dark gradients */
+        color: #ffffff !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
     }
 
@@ -90,14 +90,14 @@
 
     /* Card text styling */
     .card-title, .card-text {
-        color: #ffffff !important; /* enforce white text for all cards */
+        color: #ffffff !important;
     }
 </style>
 
 @code {
     private string CreateMeeting = "/createmeeting";
     private string UpdateProfile = "/updateprofile";
-    private string DeleteProfile = "/deleteprofile";
+    private string DeleteEmployee = "/employeedelete"; // ✅ Link corrected
     private string MeetingRoomList = "/meetingroomlist";
 
     void GoTo(string url)

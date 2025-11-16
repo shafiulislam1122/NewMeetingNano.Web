@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿// UserRepository.cs (Infrastructure/Repositories)
+
+using Dapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
@@ -7,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    public class UserRepository : IUserRepository
+    // ✅ FIX: Inherits from IIUserRepository
+    public class UserRepository : IIUserRepository
     {
         private readonly DapperContext _context;
 
@@ -45,7 +48,7 @@ namespace Infrastructure.Repositories
         // Get user by Id
         public async Task<User> GetByIdAsync(int id)
         {
-            var query = "SELECT * FROM Users WHERE Id = @Id";
+            var query = "SELECT * FROM Users WHERE [Id] = @Id";
             using var connection = _context.CreateConnection();
             return await connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
         }
@@ -60,7 +63,7 @@ namespace Infrastructure.Repositories
                     Username = @Username,
                     PasswordHash = @PasswordHash,
                     Role = @Role
-                WHERE Id = @Id";
+                WHERE [Id] = @Id";
 
             using var connection = _context.CreateConnection();
             return await connection.ExecuteAsync(query, new
@@ -77,7 +80,7 @@ namespace Infrastructure.Repositories
         // Delete user by Id, return affected rows
         public async Task<int> DeleteAsync(int id)
         {
-            var query = "DELETE FROM Users WHERE Id = @Id";
+            var query = "DELETE FROM Users WHERE [Id] = @Id";
             using var connection = _context.CreateConnection();
             return await connection.ExecuteAsync(query, new { Id = id });
         }
@@ -91,12 +94,23 @@ namespace Infrastructure.Repositories
             return users.AsList();
         }
 
-        // Get user by name and password (for login)
-        public async Task<User> GetByNamePasswordAsync(string name, string password)
+        // ✅ NEW: Get user by name and email
+        public async Task<User> GetByNameEmailAsync(string name, string email)
         {
-            var query = "SELECT * FROM Users WHERE FullName = @Name AND PasswordHash = @Password";
+            var query = "SELECT * FROM Users WHERE Username = @Name AND Email = @Email";
             using var connection = _context.CreateConnection();
-            return await connection.QuerySingleOrDefaultAsync<User>(query, new { Name = name, Password = password });
+            return await connection.QuerySingleOrDefaultAsync<User>(query, new { Name = name, Email = email });
+        }
+
+        // ✅ NEW: Delete user using Name + Email (NO Id needed)
+        public async Task<int> DeleteByNameEmailAsync(string name, string email)
+        {
+            var query = @"
+                DELETE FROM Users
+                WHERE Username = @Name AND Email = @Email";
+
+            using var connection = _context.CreateConnection();
+            return await connection.ExecuteAsync(query, new { Name = name, Email = email });
         }
     }
 }
