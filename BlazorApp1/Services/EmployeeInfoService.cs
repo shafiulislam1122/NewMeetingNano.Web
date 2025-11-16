@@ -1,49 +1,38 @@
-﻿using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System; // Exception ব্যবহারের জন্য এটি প্রয়োজন
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using BlazorApp1.Client.Models;
-using BlazorApp1.Services;
 
 namespace BlazorApp1.Client.Services
 {
     public class EmployeeInfoService
     {
         private readonly HttpClient _httpClient;
-        private readonly TokenProvider _tokenProvider;
 
-        public EmployeeInfoService(HttpClient httpClient, TokenProvider tokenProvider)
+        public EmployeeInfoService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _tokenProvider = tokenProvider;
         }
 
-        private async Task AddJwtHeaderAsync()
+        // Update profile
+        // এখন 'cmd' (UpdateProfileCommand) এ শুধু Username এবং Password আছে, UserId নেই।
+        public async Task UpdateProfileAsync(UpdateProfileCommand cmd)
         {
-            var token = await _tokenProvider.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
-                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
+            var response = await _httpClient.PutAsJsonAsync("/api/Employee/Update-Profile", cmd);
 
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+            if (!response.IsSuccessStatusCode)
+            {
+                // সার্ভার থেকে এরর মেসেজ পড়ার জন্য:
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to update profile. Status: {response.StatusCode}. Details: {errorContent}");
             }
         }
 
-        // Delete Employee Profile
-        public async Task DeleteProfileAsync(int userId)
-        {
-            await AddJwtHeaderAsync();
-            var response = await _httpClient.DeleteAsync($"/api/Employee/Delete-Profile?userId={userId}");
-            if (!response.IsSuccessStatusCode)
-                throw new Exception($"Failed to delete profile. Status: {response.StatusCode}");
-        }
-
-        // Optional: Get Employee Info
+        // Get employee info (যদি প্রয়োজন হয়)
         public async Task<EmployeeInfo> GetEmployeeInfoAsync(int userId)
         {
-            await AddJwtHeaderAsync();
+            // ধরে নেওয়া হচ্ছে EmployeeInfo ক্লাসটি আপনার Models ফোল্ডারে আছে
             return await _httpClient.GetFromJsonAsync<EmployeeInfo>($"/api/Employee/Get-Info?userId={userId}");
         }
     }

@@ -46,14 +46,16 @@ namespace Infrastructure.Repositories
         }
 
         // Get user by Id
+        // ⚠️ FIX: Changed [Id] to [UserId] to fix 500 error
         public async Task<User> GetByIdAsync(int id)
         {
-            var query = "SELECT * FROM Users WHERE [Id] = @Id";
+            var query = "SELECT * FROM Users WHERE [UserId] = @Id";
             using var connection = _context.CreateConnection();
             return await connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
         }
 
         // Update user, return affected rows
+        // ⚠️ FIX: Changed [Id] to [UserId]
         public async Task<int> UpdateAsync(User user)
         {
             var query = @"
@@ -63,7 +65,7 @@ namespace Infrastructure.Repositories
                     Username = @Username,
                     PasswordHash = @PasswordHash,
                     Role = @Role
-                WHERE [Id] = @Id";
+                WHERE [UserId] = @Id"; // <-- পরিবর্তন করা হয়েছে
 
             using var connection = _context.CreateConnection();
             return await connection.ExecuteAsync(query, new
@@ -78,9 +80,10 @@ namespace Infrastructure.Repositories
         }
 
         // Delete user by Id, return affected rows
+        // ⚠️ FIX: Changed [Id] to [UserId]
         public async Task<int> DeleteAsync(int id)
         {
-            var query = "DELETE FROM Users WHERE [Id] = @Id";
+            var query = "DELETE FROM Users WHERE [UserId] = @Id"; // <-- পরিবর্তন করা হয়েছে
             using var connection = _context.CreateConnection();
             return await connection.ExecuteAsync(query, new { Id = id });
         }
@@ -111,6 +114,24 @@ namespace Infrastructure.Repositories
 
             using var connection = _context.CreateConnection();
             return await connection.ExecuteAsync(query, new { Name = name, Email = email });
+        }
+
+        // ✨ NEW METHOD: Update only Username and Password
+        public async Task<int> UpdateUsernameAndPasswordAsync(int userId, string newUsername, string newPasswordHash)
+        {
+            var query = @"
+                UPDATE Users
+                SET Username = @Username,
+                    PasswordHash = @PasswordHash
+                WHERE [UserId] = @UserId";
+
+            using var connection = _context.CreateConnection();
+            return await connection.ExecuteAsync(query, new
+            {
+                Username = newUsername,
+                PasswordHash = newPasswordHash,
+                UserId = userId
+            });
         }
     }
 }

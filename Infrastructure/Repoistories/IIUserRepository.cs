@@ -18,5 +18,8 @@ namespace Domain.Interfaces
 
         // Optional: Get user by Name + Email
         Task<User> GetByNameEmailAsync(string name, string email);
+
+        // ✨ NEW METHOD ADDED: Update only Username and Password
+        Task<int> UpdateUsernameAndPasswordAsync(int userId, string newUsername, string newPasswordHash);
     }
 }

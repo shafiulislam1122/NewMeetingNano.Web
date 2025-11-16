@@ -1,4 +1,5 @@
 ﻿using BlazorApp1;
+using BlazorApp1.Client.Services;
 using BlazorApp1.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -19,6 +20,9 @@ builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<JwtAuthStateProvider>());
 builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<EmployeeInfoService>();
+
 
 // MeetingRoomService
 builder.Services.AddHttpClient<MeetingRoomService>(client =>

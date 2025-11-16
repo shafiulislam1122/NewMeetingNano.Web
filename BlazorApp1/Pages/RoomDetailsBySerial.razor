@@ -14,7 +14,7 @@
 
 <p>View all existing meeting rooms. Use the search box above to find specific details, including the creation time.</p>
 
-<!-- ⭐ Search Section (Placed above the list) ⭐ -->
+<!-- ⭐ Search Section -->
 <div class="card shadow p-4 mb-4 bg-light">
     <h5 class="card-title text-primary">Search Room by Serial Number</h5>
 
@@ -24,7 +24,7 @@
             <input type="number" class="form-control" id="serialInput" @bind="searchSerial" placeholder="e.g.: 1003">
         </div>
         <div class="col-sm-4">
-            <button class="btn btn-success" @onclick="HandleSearch" disabled="@(searchSerial <= 0 || isLoading)">
+            <button class="btn btn-success" @onclick="() => ShowRoomDetails(searchSerial)" disabled="@(searchSerial <= 0 || isLoading)">
                 @if (isLoading)
                 {
                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -35,7 +35,7 @@
     </div>
 </div>
 
-<!-- ⭐ Display Single Search Result (Includes Created Time) ⭐ -->
+<!-- ⭐ Display Single Search Result -->
 @if (searchedRoom != null)
 {
     <div class="card shadow p-4 mb-5 border-info">
@@ -64,7 +64,7 @@ else if (searchAttempted && !isLoading)
     </div>
 }
 
-<!-- Main List Section (Existing Code) -->
+<!-- Main List Section -->
 <h4 class="mt-5 mb-3">All Meeting Rooms</h4>
 @if (rooms == null && errorMessage == null)
 {
@@ -95,7 +95,7 @@ else
                     <td>@room.Capacity</td>
                     <td>@room.Location</td>
                     <td>
-                        <button class="btn btn-info btn-sm" @onclick="() => NavigateToDetails(room.Serial)">Details</button>
+                        <button class="btn btn-info btn-sm" @onclick="() => ShowRoomDetails(room.Serial)">Details</button>
                     </td>
                 </tr>
             }
@@ -154,9 +154,9 @@ else
         }
     }
 
-    private async Task HandleSearch()
+    private async Task ShowRoomDetails(int serial)
     {
-        if (searchSerial <= 0)
+        if (serial <= 0)
         {
             errorMessage = "Please enter a valid serial number.";
             searchedRoom = null;
@@ -168,11 +168,11 @@ else
         errorMessage = null;
         searchedRoom = null;
         searchAttempted = false;
-        lastSearchedSerial = searchSerial;
+        lastSearchedSerial = serial;
 
         try
         {
-            searchedRoom = await RoomService.GetRoomDetailsAsync(searchSerial);
+            searchedRoom = await RoomService.GetRoomDetailsAsync(serial);
             searchAttempted = true;
         }
         catch (UnauthorizedAccessException)
@@ -187,11 +187,6 @@ else
         {
             isLoading = false;
         }
-    }
-
-    private void NavigateToDetails(int serial)
-    {
-        Navigation.NavigateTo($"/roomdetails/{serial}");
     }
 
     private void HandleGoBack()

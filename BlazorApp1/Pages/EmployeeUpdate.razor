@@ -1,33 +1,32 @@
-﻿@page "/employeedelete"
+﻿@page "/updateprofile"
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@using System.Net.Http.Json
 
 <div class="d-flex align-items-center mb-4">
-    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="HandleGoBack">
+    <button class="btn back-btn-vibrant shadow-sm rounded-lg mr-3" @onclick="GoBack">
         <span class="oi oi-arrow-left" aria-hidden="true"></span> Back
     </button>
 
     <h3 class="d-flex align-items-center mb-0 ml-3">
-        <span class="oi oi-trash mr-2" style="font-size:1.4rem; color:#ff4d4d;"></span>
-        Delete Employee
+        <span class="oi oi-pencil mr-2" style="font-size:1.4rem; color:#007bff;"></span>
+        Update Profile
     </h3>
 </div>
 
 <div class="card shadow-lg p-4" style="max-width:400px; margin:auto; border-radius:12px;">
     <div class="mb-3">
-        <input @bind="Name" placeholder="Employee Name" class="form-control" />
+        <input @bind="Username" placeholder="Name" class="form-control" />
     </div>
     <div class="mb-3">
-        <input @bind="Email" type="email" placeholder="Employee Email" class="form-control" />
+        <input @bind="Password" type="password" placeholder="Password" class="form-control" />
     </div>
-    <button class="btn btn-danger w-100" @onclick="DeleteEmployeeAsync">Delete Employee</button>
+    <button class="btn btn-primary w-100" @onclick="UpdateProfileAsync">Update</button>
 
     @if (!string.IsNullOrEmpty(Message))
     {
-    <div class="alert mt-2 @(IsError ? " alert-danger" : "alert-success" )">
-        @Message
-    </div>
+        <div class="alert mt-2 @(IsError ? "alert-danger" : "alert-success")">
+            @Message
+        </div>
     }
 </div>
 
@@ -50,23 +49,17 @@
 </style>
 
 @code {
-    private string Name;
-    private string Email;
+    private string Username;
+    private string Password;
     private string Message;
     private bool IsError;
 
-    public class DeleteEmployeeDto
-    {
-        public string Name { get; set; }
-        public string Email { get; set; }
-    }
-
-    private async Task DeleteEmployeeAsync()
+    private async Task UpdateProfileAsync()
     {
         Message = "";
         IsError = false;
 
-        if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Email))
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
         {
             Message = "Please fill all fields.";
             IsError = true;
@@ -75,37 +68,47 @@
 
         try
         {
-            var dto = new DeleteEmployeeDto { Name = Name, Email = Email };
+            var dto = new UpdateProfileCommand
+            {
+                Username = Username,
+                Password = Password
+            };
 
-            // ✅ Direct POST request without JWT
-            var response = await Http.PostAsJsonAsync("api/Employee/Delete-Profile-ByNameEmail", dto);
+            var response = await Http.PutAsJsonAsync("/api/Employee/Update-Profile", dto);
 
             if (response.IsSuccessStatusCode)
             {
-                Message = "Employee deleted successfully!";
+                Message = "Profile updated successfully!";
                 IsError = false;
                 StateHasChanged();
                 await Task.Delay(1500);
-                Navigation.NavigateTo("/employeepanel"); // ✅ Redirect to EmployeePanel
+                Navigation.NavigateTo("/employeepanel");
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                Message = string.IsNullOrEmpty(error) ? "Failed to delete employee." : error;
+                Message = string.IsNullOrEmpty(error)
+                    ? $"Failed to update profile. Status: {response.StatusCode}"
+                    : $"Failed: {error}";
                 IsError = true;
-                StateHasChanged();
             }
         }
         catch (Exception ex)
         {
             Message = $"Error: {ex.Message}";
             IsError = true;
-            StateHasChanged();
         }
     }
 
-    private void HandleGoBack()
+    private void GoBack()
     {
-        Navigation.NavigateTo("/employeepanel"); // ✅ Back button goes to EmployeePanel
+        Navigation.NavigateTo("/employeepanel");
+    }
+
+    // DTO class
+    public class UpdateProfileCommand
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Security.Claims; // ClaimTypes ব্যবহারের জন্য এটি প্রয়োজন
 
 namespace Web.Controllers
 {
@@ -37,24 +38,44 @@ namespace Web.Controllers
             return Ok("Meeting Room Created by Employee");
         }
 
+        // ✨ UPDATED: শুধু Username এবং Password আপডেট করা হবে, ID টোকেন থেকে নেওয়া হবে।
         [HttpPut("Update-Profile")]
+        [AllowAnonymous]
         public async Task<IActionResult> UpdateProfile(UpdateProfileCommand cmd)
         {
-            var user = await _userRepository.GetByIdAsync(cmd.UserId);
-            if (user == null) return NotFound();
+            // ১. JWT টোকেন থেকে ইউজারের ID নেওয়া
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            {
+                // টোকেনে ID না পেলে
+                return Unauthorized("User ID not found in authentication token.");
+            }
 
-            user.Username = cmd.Username;
-            user.PasswordHash = cmd.Password;
-            await _userRepository.UpdateAsync(user);
-            return Ok("Profile Updated");
+            // ২. UserRepository তে নতুন মেথডটি ব্যবহার করে শুধু Username ও Password আপডেট করা
+            // ধরে নেওয়া হয়েছে পাসওয়ার্ডটি ক্লায়েন্ট সাইড থেকে আসার সময় হ্যাস (Hash) করা হয়েছে অথবা
+            // সার্ভার সাইডে পাসওয়ার্ড হ্যাস করার লজিক এখানে যুক্ত করা হবে।
+            var affectedRows = await _userRepository.UpdateUsernameAndPasswordAsync(
+                userId,
+                cmd.Username,
+                cmd.Password // ⚠️ এখানে পাসওয়ার্ড হ্যাস করার লজিক দরকার হতে পারে
+            );
+
+            if (affectedRows == 0)
+            {
+                return NotFound("Profile update failed or user not found.");
+            }
+
+            return Ok("Profile Updated (Username and Password only)");
         }
 
         [HttpDelete("Delete-Profile")]
         public async Task<IActionResult> DeleteProfile(DeleteProfileCommand cmd)
         {
+            // ⚠️ নোট: এখানেও ID ক্লায়েন্ট থেকে আসছে। যদি টোকেন থেকে নিতে চান, তাহলে পরিবর্তন প্রয়োজন।
             await _userRepository.DeleteAsync(cmd.UserId);
             return Ok("Profile Deleted");
         }
+
         [AllowAnonymous]
         [HttpPost("Delete-Profile-ByNameEmail")] // POST for body support
         public async Task<IActionResult> DeleteProfileByNameEmail([FromBody] DeleteEmployeeDto request)
